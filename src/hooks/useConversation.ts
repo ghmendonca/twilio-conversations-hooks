@@ -29,17 +29,20 @@ const useConversation = (uniqueName: string): UseConversation => {
     const join = async (): Promise<void> => {
         setLoading(true)
 
-        if (conversation.status !== 'joined') {
-            await conversation.join()
+        if (conversation) {
+            if (conversation.status !== 'joined') {
+                await conversation.join()
+            }
+
+            // @ts-ignore
+            conversation.on('messageAdded', (message: Message) => {
+                setMessages(messages => [...messages, message])
+            })
+
+            const messages = await conversation.getMessages()
+
+            setMessages(messages.items)
         }
-
-        conversation.on('messageAdded', (message: Message) => {
-            setMessages(messages => [...messages, message])
-        })
-
-        const messages = await conversation.getMessages()
-
-        setMessages(messages.items)
 
         setLoading(false)
     }
