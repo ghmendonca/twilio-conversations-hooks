@@ -1,4 +1,5 @@
 import { Message } from "@twilio/conversations/lib/message"
+import { Participant } from "@twilio/conversations/lib/participant"
 import { useContext, useEffect, useState } from "react"
 import TwilioContext from "../contexts/TwilioContext"
 
@@ -6,11 +7,14 @@ interface UseConversation {
     messages: Message[]
     loading: boolean
     sendMessage(message: string): Promise<void>
+    sendTyping(): Promise<void>
+    typing: string
 }
 
 const useConversation = (uniqueName: string): UseConversation => {
     const [loading, setLoading] = useState<boolean>(false)
     const [messages, setMessages] = useState<Message[]>([])
+    const [typing, setTyping] = useState<string>('')
 
     const { conversations } = useContext(TwilioContext)
 
@@ -39,6 +43,16 @@ const useConversation = (uniqueName: string): UseConversation => {
                 setMessages(messages => [...messages, message])
             })
 
+            // @ts-ignore
+            conversation.on('typingStarted', (member: Participant) => {
+                setTyping(member.identity)
+            })
+
+            // @ts-ignore
+            conversation.on('typingEnded', (member: Participant) => {
+                setTyping('')
+            })
+
             const messages = await conversation.getMessages()
 
             setMessages(messages.items)
@@ -47,10 +61,18 @@ const useConversation = (uniqueName: string): UseConversation => {
         setLoading(false)
     }
 
+    const sendTyping = async (): Promise<void> => {
+        if (conversation) {
+            await conversation.typing()
+        }
+    }
+
     return {
         messages,
         loading,
-        sendMessage
+        sendMessage,
+        sendTyping,
+        typing
     }
 }
 
