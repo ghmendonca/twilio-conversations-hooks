@@ -45,8 +45,8 @@ const Chat: VoidFunctionComponent = () => {
     const [conversationUniqueName, setConversationUniqueName] = useState<string>('')
     const [message, setMessage] = useState<string>('')
 
-    const { connect, conversations } = useTwilioChat()
-    const { messages, sendMessages } = useConversation(conversationUniqueName)
+    const { connect, conversations } = useTwilio()
+    const { messages, sendMessage } = useConversation(conversationUniqueName)
 
     useEffect(() => {
         connectToTwilio()
